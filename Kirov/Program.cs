@@ -1,4 +1,5 @@
-﻿using Kirov.Platform;
+﻿using Kirov;
+using Kirov.Platform;
 
 using Newtonsoft.Json.Linq;
 
@@ -20,6 +21,8 @@ if (platform is ISupportAffinity supportsAffinity)
     supportsAffinity.AffinityMask = Affinity.GetDesiredAffinity();
 
 platform.Initialize();
+
+Atmosphere.Setup();
 
 int kirovs = 0;
 
@@ -52,6 +55,7 @@ await Task.WhenAll(tasks);
 
 async Task Kirov(ChromeDriver driver, DevToolsSession devTools) {
     Console.Title = Invariant($"{Interlocked.Increment(ref kirovs)} Kirovs reporting");
+    Atmosphere.QueueUp();
     try {
         while (true) {
             driver.Navigate().GoToUrl("https://www.rt.com/");
@@ -59,5 +63,6 @@ async Task Kirov(ChromeDriver driver, DevToolsSession devTools) {
         }
     } finally {
         Console.Title = Invariant($"{Interlocked.Decrement(ref kirovs)} Kirovs reporting");
+        Atmosphere.QueueDown();
     }
 }
