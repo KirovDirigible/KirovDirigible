@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kirov", "Kirov\Kirov.csproj", "{DA55FE80-EFBB-48F5-BAEF-7A0F1D2BF956}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repo", "Repo", "{D85861FD-16F0-46BC-9E33-54AB136F2EBC}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA55FE80-EFBB-48F5-BAEF-7A0F1D2BF956}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA55FE80-EFBB-48F5-BAEF-7A0F1D2BF956}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA55FE80-EFBB-48F5-BAEF-7A0F1D2BF956}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA55FE80-EFBB-48F5-BAEF-7A0F1D2BF956}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1CD0090E-334D-470F-889C-7215223EC90E}
+	EndGlobalSection
+EndGlobal
