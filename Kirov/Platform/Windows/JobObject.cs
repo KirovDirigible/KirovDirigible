@@ -1,44 +1,46 @@
-﻿namespace Kirov.Platform.Windows {
-    using System.Runtime.InteropServices;
+﻿namespace Kirov.Platform.Windows;
 
-    using static PInvoke.Kernel32;
+using System.Runtime.InteropServices;
 
-    class JobObject : IDisposable {
-        readonly SafeObjectHandle handle;
+using static PInvoke.Kernel32;
 
-        public JobObject(JOB_OBJECT_LIMIT_FLAGS limits = default) {
-            this.handle = CreateJobObject(IntPtr.Zero, null);
+class JobObject : IDisposable {
+    readonly SafeObjectHandle handle;
 
-            var info = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
-                LimitFlags = limits,
-            };
+    public JobObject(bool killOnClose = false, nuint? affinityMask = null) {
+        this.handle = CreateJobObject(IntPtr.Zero, null);
 
-            var extendedInfo = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION { BasicLimitInformation = info };
+        var limits = default(JOB_OBJECT_LIMIT_FLAGS);
+        if (killOnClose) limits |= JOB_OBJECT_LIMIT_FLAGS.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+        if (affinityMask is not null) limits |= JOB_OBJECT_LIMIT_FLAGS.JOB_OBJECT_LIMIT_AFFINITY;
 
-            int length = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
-            IntPtr extendedInfoPtr = Marshal.AllocHGlobal(length);
-            Marshal.StructureToPtr(extendedInfo, extendedInfoPtr, false);
+        var info = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
+            LimitFlags = limits,
+            Affinity = affinityMask ?? 0,
+        };
 
-            if (!SetInformationJobObject(this.handle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, extendedInfoPtr, (uint)length))
-                throw new System.ComponentModel.Win32Exception();
-        }
+        var extendedInfo = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION { BasicLimitInformation = info };
 
-        public bool AddProcess(SafeObjectHandle processHandle) {
-            return AssignProcessToJobObject(this.handle, processHandle);
-        }
+        int length = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+        IntPtr extendedInfoPtr = Marshal.AllocHGlobal(length);
+        Marshal.StructureToPtr(extendedInfo, extendedInfoPtr, false);
 
-        #region IDisposable Members
-
-        public void Dispose() {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-
-        private void Dispose(bool disposing) => this.Close();
-
-        public void Close() => this.handle.Close();
-
-        #endregion
+        if (!SetInformationJobObject(this.handle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, extendedInfoPtr, (uint)length))
+            throw new System.ComponentModel.Win32Exception();
     }
+
+    public bool AddProcess(SafeObjectHandle processHandle) {
+        return AssignProcessToJobObject(this.handle, processHandle);
+    }
+
+    #region IDisposable Members
+
+    public void Dispose() {
+        this.Close();
+        GC.SuppressFinalize(this);
+    }
+
+    public void Close() => this.handle.Close();
+
+    #endregion
 }
