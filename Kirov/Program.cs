@@ -1,4 +1,5 @@
-﻿using Kirov.Platform;
+using Kirov;
+using Kirov.Platform;
 
 using Newtonsoft.Json.Linq;
 
@@ -6,11 +7,6 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chromium;
 using OpenQA.Selenium.DevTools;
-
-const int w = 1920, h = 1080; // TODO vary
-
-// TODO: detect actual agent using non-headless version first, or just strip Headless from HeadlessChrome
-const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36";
 
 // on good systems this will leave some physical cores to the user
 int Airships = Environment.ProcessorCount * 4;
@@ -21,11 +17,17 @@ if (platform is ISupportAffinity supportsAffinity)
 
 platform.Initialize();
 
+// TODO: detect actual agent using non-headless version first, or just strip Headless from HeadlessChrome
+const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36";
+
 int kirovs = 0;
 
 var tasks = Enumerable.Range(0, Airships)
     .Select(async _ => {
+        var random = new Random();
+
         var chromeOptions = new ChromeOptions();
+        var (w, h) = Sizing.RandomSize(random);
         chromeOptions.AddArguments(new[] {
             "--headless",
             Invariant($"--window-size={w}x{h}"),
@@ -36,13 +38,19 @@ var tasks = Enumerable.Range(0, Airships)
             IsCollectingNetworkEvents = true,
         };
 
-        var driver = new ChromeDriver(chromeOptions);
-        var devTools = driver.GetDevToolsSession();
         while (true) {
-            try {
-                await Kirov(driver, devTools).ConfigureAwait(false);
-            } catch (Exception ex) {
-                Console.Error.WriteLine(ex);
+            using var driver = new ChromeDriver(chromeOptions);
+
+            driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(8);
+            driver.Manage().Timeouts().AsynchronousJavaScript = TimeSpan.FromSeconds(1);
+
+            using var devTools = driver.GetDevToolsSession();
+            for (int flight = 0; flight < 8; flight++) {
+                try {
+                    await Kirov(driver, devTools).ConfigureAwait(false);
+                } catch (Exception ex) {
+                    Console.Error.WriteLine(ex);
+                }
             }
         }
     })
